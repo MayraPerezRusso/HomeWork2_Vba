@@ -1,0 +1,120 @@
+Sub HW2()
+
+Dim Year As String
+Year = "2016"
+Dim ws As Worksheet
+
+For Each ws In ThisWorkbook.Worksheets
+ws.Activate
+
+Dim i As Long
+Dim j As Long
+Dim k As Long
+Dim toAdd As Boolean
+Dim n As Long
+Dim n1 As Long
+Dim OpenDate As String
+Dim CloseDate As String
+
+OpenDate = Year & "0101"
+CloseDate = Year & "1230"
+
+Cells(1, 9) = "Ticker"
+Cells(1, 10) = "Yearly Change"
+Cells(1, 11) = "Percent Change"
+Cells(1, 12) = "Total Stock Volume"
+j = 2
+toAdd = False
+n = Application.WorksheetFunction.CountA(Range("A:A"))
+
+Dim OpenPrice(2 To 4000) As Double
+Dim ClosePrice(2 To 4000) As Double
+Dim Diff(2 To 4000) As Double
+Dim Perct(2 To 4000) As Double
+
+For i = 2 To n
+If Cells(i, 1) = Cells(i - 1, 1) Then
+toAdd = True
+End If
+
+If toAdd = False Then
+Cells(j, 9) = Cells(i, 1)
+Cells(j, 12) = Application.WorksheetFunction.SumIf(Range("A1:A" & n), Cells(j, 9), Range("G1:G" & n))
+
+   
+    OpenPrice(j) = Cells(i, 3)
+    
+    If Cells(i - 1, 1) = Cells(j - 1, 9) And Cells(i - 1, 2) = CloseDate Then
+    ClosePrice(j - 1) = Cells(i - 1, 6)
+    End If
+j = j + 1
+End If
+
+toAdd = False
+Next i
+
+If Cells(n, 1) = Cells(j - 1, 9) And Cells(n, 2) = CloseDate Then
+ClosePrice(j - 1) = Cells(n, 6)
+End If
+
+n1 = Application.WorksheetFunction.CountA(Range("I:I"))
+For k = 2 To n1
+
+Diff(k) = ClosePrice(k) - OpenPrice(k)
+
+If OpenPrice(k) <> 0 Then
+Perct(k) = Diff(k) / OpenPrice(k)
+Else
+Perct(k) = 0
+End If
+
+Next k
+
+Range("J2:J" & n1) = Application.Transpose(Diff)
+For i = 2 To n1
+If Cells(i, 10) < 0 Then Cells(i, 10).Interior.ColorIndex = 3
+If Cells(i, 10) >= 0 Then Cells(i, 10).Interior.ColorIndex = 10
+Next i
+Range("K2:K" & n1) = Application.Transpose(Perct)
+
+Cells(2, 15) = "Greatest % increase"
+Cells(3, 15) = "Greatest % Decrease"
+Cells(4, 15) = "Greatest total volume"
+Cells(1, 16) = "Ticker"
+Cells(1, 17) = "Value"
+
+
+Dim min As Double
+Dim max As Double
+Dim maxvol1 As Double
+Dim Tick1 As String
+Dim Tick2 As String
+Dim Tick3 As String
+min = 100
+max = 0
+maxvol1 = 0
+For i = 2 To n1
+If Cells(i, 11) > max Then
+max = Cells(i, 11)
+Tick1 = Cells(i, 9)
+End If
+If Cells(i, 11) < min Then
+min = Cells(i, 11)
+Tick2 = Cells(i, 9)
+End If
+If Cells(i, 12) > maxvol1 Then
+maxvol1 = Cells(i, 12)
+Tick3 = Cells(i, 9)
+End If
+Next i
+Cells(2, 16) = Tick1
+Cells(2, 17) = max
+Cells(3, 16) = Tick2
+Cells(3, 17) = min
+Cells(4, 16) = Tick3
+Cells(4, 17) = maxvol1
+
+Next ws
+Year = Year - 1
+
+End Sub
